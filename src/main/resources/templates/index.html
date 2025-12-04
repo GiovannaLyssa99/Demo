@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <title>Turismo - Home</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         .hero-section {
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            height: 80vh;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            border-radius: 0 0 20px 20px;
+            background-size: cover; background-position: center; height: 60vh;
+            color: white; display: flex; align-items: center; justify-content: center;
+            text-align: center; border-radius: 0 0 20px 20px;
         }
+        .card-img-top { height: 200px; object-fit: cover; background-color: #ddd; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white;}
     </style>
 </head>
 <body class="bg-light">
@@ -39,43 +35,23 @@
         <div class="hero-section shadow">
             <div class="container">
                 <h1 class="display-3 fw-bold mb-3">Explore o Mundo</h1>
-                <p class="lead mb-4 fs-4">Descubra os melhores pontos turísticos, hospedagens e experiências.</p>
-                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                    <a href="/login" class="btn btn-primary btn-lg px-4 gap-3">Fazer Login para Começar</a>
-                    <a href="/registrar" class="btn btn-outline-light btn-lg px-4">Cadastrar-se</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="container my-5 text-center text-muted">
-            <h3>Por que usar nosso app?</h3>
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="h1">🗺️</div>
-                    <h5>Pontos Exclusivos</h5>
-                    <p>Encontre lugares que você nunca viu antes.</p>
-                </div>
-                <div class="col-md-4">
-                    <div class="h1">🏨</div>
-                    <h5>Hospedagens</h5>
-                    <p>Veja onde ficar perto dos seus destinos.</p>
-                </div>
-                <div class="col-md-4">
-                    <div class="h1">💬</div>
-                    <h5>Comunidade</h5>
-                    <p>Leia avaliações reais de outros viajantes.</p>
-                </div>
+                <p class="lead mb-4">Descubra os melhores destinos e experiências.</p>
+                <a href="/login" class="btn btn-primary btn-lg px-4">Fazer Login</a>
             </div>
         </div>
     </div>
 
     <div id="main-content" class="container mt-5 d-none">
-        
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>📍 Pontos Turísticos</h2>
-            <a href="/cadastro" class="btn btn-success">
-                + Novo Ponto
-            </a>
+            <h2>📍 Destinos</h2>
+            <div>
+                <a href="/api/pontos/export/csv" class="btn btn-outline-dark me-2" target="_blank">
+                    <i class="bi bi-filetype-csv"></i> Exportar Dados
+                </a>
+                <a href="/cadastro" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Novo Ponto
+                </a>
+            </div>
         </div>
 
         <div class="card p-3 mb-4 shadow-sm border-0">
@@ -90,79 +66,54 @@
         </div>
         
         <div class="row" id="lista-pontos">
-            <p class="text-center text-muted">Carregando destinos...</p>
+            <p class="text-center text-muted">Carregando...</p>
         </div>
     </div>
 
     <script>
         const token = localStorage.getItem('token');
         const userEmail = localStorage.getItem('usuario');
-
-        const introSection = document.getElementById('intro-section');
-        const mainContent = document.getElementById('main-content');
-        const authButtons = document.getElementById('auth-buttons');
-        const btnLogout = document.getElementById('btn-logout');
-        const userDisplay = document.getElementById('user-display');
+        let todosPontos = [];
 
         if (token) {
-            introSection.classList.add('d-none');
-            mainContent.classList.remove('d-none');
-            
-            authButtons.classList.add('d-none');
-            btnLogout.classList.remove('d-none');
-            userDisplay.innerText = `Olá, ${userEmail}`;
-
+            document.getElementById('intro-section').classList.add('d-none');
+            document.getElementById('main-content').classList.remove('d-none');
+            document.getElementById('auth-buttons').classList.add('d-none');
+            document.getElementById('btn-logout').classList.remove('d-none');
+            document.getElementById('user-display').innerText = `Olá, ${userEmail}`;
             carregarPontos();
-        } else {
-
         }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = '/'; // Recarrega na intro
-        }
-
-        let todosPontos = [];
+        function logout() { localStorage.clear(); window.location.reload(); }
 
         async function carregarPontos() {
             try {
                 const res = await fetch('/api/pontos');
                 todosPontos = await res.json();
                 renderizarLista(todosPontos);
-            } catch (error) {
-                console.error("Erro ao buscar pontos:", error);
-                document.getElementById('lista-pontos').innerHTML = '<p class="text-danger">Erro ao carregar dados.</p>';
-            }
+            } catch (e) { alert('Erro ao carregar dados'); }
         }
 
         function renderizarLista(lista) {
-            const divLista = document.getElementById('lista-pontos');
-            divLista.innerHTML = '';
-
-            if (lista.length === 0) {
-                divLista.innerHTML = '<div class="col-12 text-center text-muted">Nenhum ponto encontrado.</div>';
-                return;
-            }
+            const div = document.getElementById('lista-pontos');
+            div.innerHTML = '';
+            if(lista.length === 0) { div.innerHTML = '<div class="text-center">Nada encontrado.</div>'; return; }
 
             lista.forEach(p => {
-                divLista.innerHTML += `
+                div.innerHTML += `
                     <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm border-0 hover-effect">
-                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 150px;">
-                                <span class="h1">📷</span>
-                            </div>
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-img-top bg-secondary">📷</div>
                             <div class="card-body">
-                                <h5 class="card-title fw-bold text-primary">${p.nome}</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">
-                                    <i class="bi bi-geo-alt"></i> ${p.cidade} ${p.estado ? '- ' + p.estado : ''}
-                                </h6>
-                                <p class="card-text text-truncate" style="max-height: 50px;">${p.descricao}</p>
-                                
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="badge bg-warning text-dark fs-6">
-                                        ★ ${p.mediaAvaliacoes ? p.mediaAvaliacoes.toFixed(1) : '0.0'}
-                                    </span>
-                                    <a href="/ponto/${p.id}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Ver Detalhes</a>
+                                <h5 class="card-title text-primary">${p.nome}</h5>
+                                <h6 class="text-muted"><i class="bi bi-geo-alt"></i> ${p.cidade}</h6>
+                                <p class="card-text text-truncate">${p.descricao}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">★ ${p.mediaAvaliacoes ? p.mediaAvaliacoes.toFixed(1) : '0.0'}</span>
+                                    <div>
+                                        <button onclick="favoritar(${p.id})" class="btn btn-outline-danger btn-sm border-0"><i class="bi bi-heart"></i></button>
+                                        <a href="/ponto/${p.id}" class="btn btn-primary btn-sm">Detalhes</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -173,13 +124,13 @@
 
         function filtrar() {
             const termo = document.getElementById('campo-busca').value.toLowerCase();
-            
-            const filtrados = todosPontos.filter(p => 
-                p.nome.toLowerCase().includes(termo) || 
-                p.cidade.toLowerCase().includes(termo)
-            );
-            
+            const filtrados = todosPontos.filter(p => p.nome.toLowerCase().includes(termo) || p.cidade.toLowerCase().includes(termo));
             renderizarLista(filtrados);
+        }
+
+        async function favoritar(id) {
+            await fetch(`/api/favoritos/${id}`, { method: 'POST', headers: {'Authorization': 'Bearer ' + token} });
+            alert('Favoritos atualizado!');
         }
     </script>
 </body>
