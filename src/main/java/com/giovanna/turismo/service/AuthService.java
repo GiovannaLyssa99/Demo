@@ -23,8 +23,8 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    public Usuario register(RegisterRequest req) {
 
+    public Usuario register(RegisterRequest req) {
         if (usuarioRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("E-mail já cadastrado");
         }
@@ -35,16 +35,7 @@ public class AuthService {
         u.setNome(req.getNome());
         u.setSenhaHash(passwordEncoder.encode(req.getSenha()));
 
-        String role = req.getRole();
-        if (role == null || role.isBlank()) {
-            role = "USER";
-        }
-
-        if (!role.startsWith("ROLE_")) {
-            role = "ROLE_" + role.toUpperCase();
-        }
-
-        u.setRole(role);
+        u.setRole("ROLE_USER"); 
 
         return usuarioRepository.save(u);
     }

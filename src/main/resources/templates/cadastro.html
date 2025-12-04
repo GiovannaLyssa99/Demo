@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Ponto Turístico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5" style="max-width: 600px;">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Cadastrar Novo Ponto</h4>
+            </div>
+            <div class="card-body">
+                <form onsubmit="salvarPonto(event)">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Ponto *</label>
+                        <input type="text" id="nome" class="form-control" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Cidade *</label>
+                            <input type="text" id="cidade" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Estado (Sigla)</label>
+                            <input type="text" id="estado" class="form-control" maxlength="2" placeholder="Ex: GO">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descrição *</label>
+                        <textarea id="descricao" class="form-control" rows="4" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Endereço Completo</label>
+                        <input type="text" id="endereco" class="form-control">
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success">Salvar Ponto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            alert("Você precisa estar logado para cadastrar!");
+            window.location.href = "/login";
+        }
+
+        async function salvarPonto(event) {
+            event.preventDefault();
+
+            const dados = {
+                nome: document.getElementById('nome').value,
+                cidade: document.getElementById('cidade').value,
+                estado: document.getElementById('estado').value,
+                descricao: document.getElementById('descricao').value,
+                endereco: document.getElementById('endereco').value
+            };
+
+            try {
+                const response = await fetch('/api/pontos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (response.ok) {
+                    alert('Ponto turístico cadastrado com sucesso!');
+                    window.location.href = '/'; // Volta para a home
+                } else {
+                    const erro = await response.text();
+                    // Tenta ler o JSON de erro do Spring se possível
+                    try {
+                        const erroJson = JSON.parse(erro);
+                        alert('Erro: ' + (erroJson.message || erro));
+                    } catch (e) {
+                        alert('Erro ao salvar: ' + erro);
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erro de conexão com o servidor.');
+            }
+        }
+    </script>
+</body>
+</html>

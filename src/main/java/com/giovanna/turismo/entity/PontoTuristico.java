@@ -1,5 +1,6 @@
 package com.giovanna.turismo.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ public class PontoTuristico implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @Column(nullable = false)
@@ -44,9 +46,11 @@ public class PontoTuristico implements Serializable {
     private Long criadoPor;
 
     @Column(name = "created_at", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
 
     @Column(name = "media_avaliacoes", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Double mediaAvaliacoes = 0.0;
 
     @PrePersist

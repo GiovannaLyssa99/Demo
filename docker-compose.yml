@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # Banco Relacional (PostgreSQL)
+  postgres:
+    image: postgres:15
+    container_name: turismo_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: turismo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Banco NoSQL (MongoDB)
+  mongo:
+    image: mongo:6.0
+    container_name: turismo_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # Cache (Redis)
+  redis:
+    image: redis:7.0
+    container_name: turismo_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+  mongo_data:

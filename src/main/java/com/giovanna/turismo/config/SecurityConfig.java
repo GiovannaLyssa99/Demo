@@ -36,7 +36,11 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/login", "/registrar", "/ponto/**", "/cadastro", "/css/**", "/js/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pontos/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/hospedagens/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/comentarios/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/avaliacoes/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
