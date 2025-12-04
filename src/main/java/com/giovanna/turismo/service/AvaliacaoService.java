@@ -7,6 +7,9 @@ import com.giovanna.turismo.repository.PontoTuristicoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.giovanna.turismo.entity.Usuario;
+import com.giovanna.turismo.repository.UsuarioRepository;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,10 +19,12 @@ public class AvaliacaoService {
 
     private final AvaliacaoRepository avaliacaoRepo;
     private final PontoTuristicoRepository pontoRepo;
+private final UsuarioRepository usuarioRepo;
 
-    public AvaliacaoService(AvaliacaoRepository avaliacaoRepo, PontoTuristicoRepository pontoRepo) {
+    public AvaliacaoService(AvaliacaoRepository avaliacaoRepo, PontoTuristicoRepository pontoRepo, UsuarioRepository usuarioRepo) {
         this.avaliacaoRepo = avaliacaoRepo;
         this.pontoRepo = pontoRepo;
+        this.usuarioRepo = usuarioRepo;
     }
 
     @Transactional
@@ -73,9 +78,19 @@ public class AvaliacaoService {
         pontoRepo.save(p);
     }
 
-    public void deletarPorId(Long id) {
+public void deletarPorId(Long id, String emailUsuarioLogado, boolean isAdmin) {
         Avaliacao av = avaliacaoRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Avaliação não encontrada"));
+
+        if (!isAdmin) {
+            Usuario usuario = usuarioRepo.findByEmail(emailUsuarioLogado)
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário logado não encontrado no banco"));
+            
+            if (!av.getUsuarioId().equals(usuario.getId())) {
+                throw new AccessDeniedException("Você não tem permissão para excluir esta avaliação.");
+            }
+        }
+
         Long pontoId = av.getPontoId();
         avaliacaoRepo.deleteById(id);
         recalcularMedia(pontoId);

@@ -73,4 +73,20 @@ public class Usuario {
     public void setRole(String role) {
         this.role = role;
     }
+
+        @ManyToMany
+    @JoinTable(
+        name = "favoritos",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "ponto_id")
+    )
+    private java.util.Set<PontoTuristico> favoritos = new java.util.HashSet<>();
+
+    public java.util.Set<PontoTuristico> getFavoritos() {
+        return favoritos;
+    }
+
+    public void setFavoritos(java.util.Set<PontoTuristico> favoritos) {
+        this.favoritos = favoritos;
+    }
 }

@@ -3,6 +3,8 @@ package com.giovanna.turismo.service;
 import com.giovanna.turismo.entity.PontoTuristico;
 import com.giovanna.turismo.repository.PontoTuristicoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +18,7 @@ public class PontoTuristicoService {
         this.repo = repo;
     }
 
+    @CacheEvict(value = "pontos", allEntries = true)
     public PontoTuristico salvar(PontoTuristico p) {
         validarBasico(p);
         if (repo.existsByNomeAndCidade(p.getNome(), p.getCidade())) {
@@ -24,7 +27,9 @@ public class PontoTuristicoService {
         return repo.save(p);
     }
 
+    @Cacheable(value = "pontos")
     public List<PontoTuristico> listarTodos() {
+        try { Thread.sleep(1000); } catch (InterruptedException e) {} 
         return repo.findAll();
     }
 
@@ -33,6 +38,7 @@ public class PontoTuristicoService {
                 .orElseThrow(() -> new EntityNotFoundException("Ponto turístico não encontrado"));
     }
 
+    @CacheEvict(value = "pontos", allEntries = true)
     public PontoTuristico atualizar(Long id, PontoTuristico novo) {
         PontoTuristico existente = buscarPorId(id);
 
@@ -57,6 +63,7 @@ public class PontoTuristicoService {
         return repo.save(existente);
     }
 
+    @CacheEvict(value = "pontos", allEntries = true)
     public void deletar(Long id) {
         if (!repo.existsById(id)) {
             throw new EntityNotFoundException("Ponto turístico não encontrado");
