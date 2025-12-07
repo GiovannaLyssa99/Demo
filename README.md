@@ -117,8 +117,8 @@ O sistema verifica automaticamente se existe um administrador ao
 iniciar. Se não existir, ele cria o usuário padrão para testes (via
 DataSeeder):
 
--   **Login:** admin\
--   **Email:** admin@email.com\
+-   **Login:** admin
+-   **Email:** admin@email.com
 -   **Senha:** 123456
 
 Utilize este usuário para testar funcionalidades exclusivas, como
