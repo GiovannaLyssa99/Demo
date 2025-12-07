@@ -94,32 +94,72 @@
             } catch (e) { alert('Erro ao carregar dados'); }
         }
 
-        function renderizarLista(lista) {
-            const div = document.getElementById('lista-pontos');
-            div.innerHTML = '';
-            if(lista.length === 0) { div.innerHTML = '<div class="text-center">Nada encontrado.</div>'; return; }
+function renderizarLista(lista) {
+            const divLista = document.getElementById('lista-pontos');
+            divLista.innerHTML = '';
+
+            if (lista.length === 0) {
+                divLista.innerHTML = '<div class="col-12 text-center text-muted">Nenhum ponto encontrado.</div>';
+                return;
+            }
 
             lista.forEach(p => {
-                div.innerHTML += `
+                // Criamos um ID único para a imagem deste card para poder atualizá-la depois
+                const imgId = `img-card-${p.id}`;
+
+                divLista.innerHTML += `
                     <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm border-0">
-                            <div class="card-img-top bg-secondary">📷</div>
+                        <div class="card h-100 shadow-sm border-0 hover-effect">
+                            <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center overflow-hidden" style="height: 200px;">
+                                <img id="${imgId}" src="" style="display:none; width: 100%; height: 100%; object-fit: cover;" alt="${p.nome}">
+                                <span id="placeholder-${p.id}" class="h1">📷</span>
+                            </div>
+                            
                             <div class="card-body">
-                                <h5 class="card-title text-primary">${p.nome}</h5>
-                                <h6 class="text-muted"><i class="bi bi-geo-alt"></i> ${p.cidade}</h6>
+                                <h5 class="card-title fw-bold text-primary">${p.nome}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="bi bi-geo-alt"></i> ${p.cidade} ${p.estado ? '- ' + p.estado : ''}
+                                </h6>
                                 <p class="card-text text-truncate">${p.descricao}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-warning text-dark">★ ${p.mediaAvaliacoes ? p.mediaAvaliacoes.toFixed(1) : '0.0'}</span>
-                                    <div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="badge bg-warning text-dark fs-6">
+                                        ★ ${p.mediaAvaliacoes ? p.mediaAvaliacoes.toFixed(1) : '0.0'}
+                                    </span>
+                                    <div class="btn-group">
                                         <button onclick="favoritar(${p.id})" class="btn btn-outline-danger btn-sm border-0"><i class="bi bi-heart"></i></button>
-                                        <a href="/ponto/${p.id}" class="btn btn-primary btn-sm">Detalhes</a>
+                                        <a href="/ponto/${p.id}" class="btn btn-primary btn-sm rounded-pill px-3 ms-2">Ver Detalhes</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
+
+                carregarFotoCapa(p.id, imgId);
             });
+        }
+
+        async function carregarFotoCapa(pontoId, imgElementId) {
+            try {
+                const res = await fetch(`/api/pontos/${pontoId}/fotos`);
+                if (res.ok) {
+                    const fotos = await res.json();
+                    if (fotos && fotos.length > 0) {
+                        // Pega a primeira foto da lista
+                        const primeiraFoto = fotos[0]; 
+                        const img = document.getElementById(imgElementId);
+                        const placeholder = document.getElementById(`placeholder-${pontoId}`);
+                        
+                        // Atualiza o SRC da imagem e esconde o emoji
+                        img.src = `/api/fotos/${primeiraFoto.id}`;
+                        img.style.display = 'block';
+                        if(placeholder) placeholder.style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                console.log(`Sem foto para o ponto ${pontoId}`);
+            }
         }
 
         function filtrar() {

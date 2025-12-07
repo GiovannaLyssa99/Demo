@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,11 +27,9 @@ public class FotoService {
     }
 
     public Foto salvarFoto(Long pontoId, Long usuarioId, MultipartFile arquivo, String titulo) throws IOException {
-
         if (!pontoRepo.existsById(pontoId)) {
             throw new IllegalArgumentException("Ponto turístico não encontrado");
         }
-
         long qtd = fotoRepo.countByPontoId(pontoId);
         if (qtd >= 10) {
             throw new IllegalArgumentException("Limite de 10 fotos por ponto atingido");
@@ -53,5 +51,18 @@ public class FotoService {
 
         Foto foto = new Foto(pontoId, usuarioId, filename, titulo, target.toString());
         return fotoRepo.save(foto);
+    }
+
+    public List<Foto> listarPorPonto(Long pontoId) {
+        return fotoRepo.findByPontoId(pontoId);
+    }
+
+    public Foto buscarPorId(String id) {
+        return fotoRepo.findById(id).orElseThrow(() -> new RuntimeException("Foto não encontrada"));
+    }
+
+    public byte[] recuperarImagem(String filename) throws IOException {
+        Path path = Paths.get(uploadDir).resolve(filename);
+        return Files.readAllBytes(path);
     }
 }
