@@ -31,6 +31,17 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Latitude (Ex: -16.68)</label>
+                            <input type="number" step="any" id="latitude" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Longitude (Ex: -49.26)</label>
+                            <input type="number" step="any" id="longitude" class="form-control">
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Descrição *</label>
                         <textarea id="descricao" class="form-control" rows="4" required></textarea>
@@ -59,12 +70,15 @@
         }
 
         async function salvarPonto(event) {
-            event.preventDefault();
+            event.preventDefault(); // Não recarrega a página
 
             const dados = {
                 nome: document.getElementById('nome').value,
                 cidade: document.getElementById('cidade').value,
                 estado: document.getElementById('estado').value,
+                // NOVOS CAMPOS NO JSON
+                latitude: document.getElementById('latitude').value,
+                longitude: document.getElementById('longitude').value,
                 descricao: document.getElementById('descricao').value,
                 endereco: document.getElementById('endereco').value
             };
@@ -84,7 +98,6 @@
                     window.location.href = '/'; // Volta para a home
                 } else {
                     const erro = await response.text();
-                    // Tenta ler o JSON de erro do Spring se possível
                     try {
                         const erroJson = JSON.parse(erro);
                         alert('Erro: ' + (erroJson.message || erro));

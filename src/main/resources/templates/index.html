@@ -8,11 +8,16 @@
     <style>
         .hero-section {
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover; background-position: center; height: 60vh;
-            color: white; display: flex; align-items: center; justify-content: center;
-            text-align: center; border-radius: 0 0 20px 20px;
+            background-size: cover;
+            background-position: center;
+            height: 60vh;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
         }
-        .card-img-top { height: 200px; object-fit: cover; background-color: #ddd; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white;}
     </style>
 </head>
 <body class="bg-light">
@@ -36,18 +41,28 @@
             <div class="container">
                 <h1 class="display-3 fw-bold mb-3">Explore o Mundo</h1>
                 <p class="lead mb-4">Descubra os melhores destinos e experiências.</p>
-                <a href="/login" class="btn btn-primary btn-lg px-4">Fazer Login</a>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="/login" class="btn btn-primary btn-lg px-4 gap-3">Fazer Login</a>
+                    <a href="/registrar" class="btn btn-outline-light btn-lg px-4">Criar Conta</a>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="main-content" class="container mt-5 d-none">
+        
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>📍 Destinos</h2>
             <div>
-                <a href="/api/pontos/export/csv" class="btn btn-outline-dark me-2" target="_blank">
-                    <i class="bi bi-filetype-csv"></i> Exportar Dados
-                </a>
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-download"></i> Exportar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/api/pontos/export/csv" target="_blank">CSV</a></li>
+                        <li><a class="dropdown-item" href="/api/pontos/export/json" target="_blank">JSON</a></li>
+                    </ul>
+                </div>
                 <a href="/cadastro" class="btn btn-success">
                     <i class="bi bi-plus-circle"></i> Novo Ponto
                 </a>
@@ -56,8 +71,16 @@
 
         <div class="card p-3 mb-4 shadow-sm border-0">
             <div class="row g-2">
-                <div class="col-md-10">
+                <div class="col-md-6">
                     <input type="text" id="campo-busca" class="form-control" placeholder="Buscar por nome ou cidade...">
+                </div>
+                <div class="col-md-4">
+                    <select id="filtro-nota" class="form-select">
+                        <option value="">Todas as notas</option>
+                        <option value="4">⭐ 4.0 ou mais</option>
+                        <option value="3">⭐ 3.0 ou mais</option>
+                        <option value="2">⭐ 2.0 ou mais</option>
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <button onclick="filtrar()" class="btn btn-primary w-100">Filtrar</button>
@@ -66,35 +89,55 @@
         </div>
         
         <div class="row" id="lista-pontos">
-            <p class="text-center text-muted">Carregando...</p>
+            <p class="text-center text-muted">Carregando destinos...</p>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         const token = localStorage.getItem('token');
         const userEmail = localStorage.getItem('usuario');
-        let todosPontos = [];
 
+        // Referências aos elementos
+        const introSection = document.getElementById('intro-section');
+        const mainContent = document.getElementById('main-content');
+        const authButtons = document.getElementById('auth-buttons');
+        const btnLogout = document.getElementById('btn-logout');
+        const userDisplay = document.getElementById('user-display');
+
+        // Lógica de Exibição (Logado vs Não Logado)
         if (token) {
-            document.getElementById('intro-section').classList.add('d-none');
-            document.getElementById('main-content').classList.remove('d-none');
-            document.getElementById('auth-buttons').classList.add('d-none');
-            document.getElementById('btn-logout').classList.remove('d-none');
-            document.getElementById('user-display').innerText = `Olá, ${userEmail}`;
+            introSection.classList.add('d-none');
+            mainContent.classList.remove('d-none');
+            
+            authButtons.classList.add('d-none');
+            btnLogout.classList.remove('d-none');
+            userDisplay.innerText = `Olá, ${userEmail}`;
+
             carregarPontos();
         }
 
-        function logout() { localStorage.clear(); window.location.reload(); }
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/'; 
+        }
+
+        // Variável global para guardar os pontos e filtrar localmente
+        let todosPontos = [];
 
         async function carregarPontos() {
             try {
                 const res = await fetch('/api/pontos');
                 todosPontos = await res.json();
                 renderizarLista(todosPontos);
-            } catch (e) { alert('Erro ao carregar dados'); }
+            } catch (error) {
+                console.error("Erro ao buscar pontos:", error);
+                document.getElementById('lista-pontos').innerHTML = '<p class="text-danger">Erro ao carregar dados.</p>';
+            }
         }
 
-function renderizarLista(lista) {
+        function renderizarLista(lista) {
             const divLista = document.getElementById('lista-pontos');
             divLista.innerHTML = '';
 
@@ -104,7 +147,6 @@ function renderizarLista(lista) {
             }
 
             lista.forEach(p => {
-                // Criamos um ID único para a imagem deste card para poder atualizá-la depois
                 const imgId = `img-card-${p.id}`;
 
                 divLista.innerHTML += `
@@ -140,18 +182,17 @@ function renderizarLista(lista) {
             });
         }
 
+        // Busca foto de capa no Mongo
         async function carregarFotoCapa(pontoId, imgElementId) {
             try {
                 const res = await fetch(`/api/pontos/${pontoId}/fotos`);
                 if (res.ok) {
                     const fotos = await res.json();
                     if (fotos && fotos.length > 0) {
-                        // Pega a primeira foto da lista
                         const primeiraFoto = fotos[0]; 
                         const img = document.getElementById(imgElementId);
                         const placeholder = document.getElementById(`placeholder-${pontoId}`);
                         
-                        // Atualiza o SRC da imagem e esconde o emoji
                         img.src = `/api/fotos/${primeiraFoto.id}`;
                         img.style.display = 'block';
                         if(placeholder) placeholder.style.display = 'none';
@@ -162,9 +203,18 @@ function renderizarLista(lista) {
             }
         }
 
+        // Lógica de Filtro (Nome/Cidade + Nota Mínima)
         function filtrar() {
             const termo = document.getElementById('campo-busca').value.toLowerCase();
-            const filtrados = todosPontos.filter(p => p.nome.toLowerCase().includes(termo) || p.cidade.toLowerCase().includes(termo));
+            const notaMinima = document.getElementById('filtro-nota').value;
+            
+            const filtrados = todosPontos.filter(p => {
+                const bateNome = p.nome.toLowerCase().includes(termo) || p.cidade.toLowerCase().includes(termo);
+                const bateNota = !notaMinima || (p.mediaAvaliacoes >= parseFloat(notaMinima));
+                
+                return bateNome && bateNota;
+            });
+            
             renderizarLista(filtrados);
         }
 

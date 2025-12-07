@@ -75,4 +75,11 @@ public class PontoTuristicoController {
                 .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
                 .body(csvContent);
     }
+
+    @GetMapping("/export/json")
+    public ResponseEntity<List<PontoTuristico>> exportarJson() {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"pontos.json\"")
+                .body(service.listarTodos());
+    }
 }

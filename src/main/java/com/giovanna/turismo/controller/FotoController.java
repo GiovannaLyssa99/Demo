@@ -19,7 +19,6 @@ public class FotoController {
         this.fotoService = fotoService;
     }
 
-    // UPLOAD
     @PostMapping("/api/pontos/{pontoId}/fotos")
     public ResponseEntity<?> upload(@PathVariable Long pontoId,
                                     @RequestParam(value = "usuarioId", required = false) Long usuarioId,
@@ -41,13 +40,9 @@ public class FotoController {
             byte[] imagem = fotoService.recuperarImagem(foto.getFilename());
             
             String mimeType = URLConnection.guessContentTypeFromName(foto.getFilename());
-            if (mimeType == null) {
-                mimeType = "image/jpeg";
-            }
+            if (mimeType == null) mimeType = "image/jpeg";
 
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(mimeType))
-                    .body(imagem);
+            return ResponseEntity.ok().contentType(MediaType.parseMediaType(mimeType)).body(imagem);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
